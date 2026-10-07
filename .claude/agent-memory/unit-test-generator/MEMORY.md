@@ -1,3 +1,4 @@
 - [Calculator Codebase Testing Patterns](calculator_testing_patterns.md) — input validation and arithmetic function testing conventions
 - [Division by Zero Convention](division_by_zero_handling.md) — codebase returns None instead of raising exception
 - [Parameterized Testing Strategy](parameterized_tests_strategy.md) — efficient coverage for multiple similar scenarios
+- [Cosine Testing Patterns](calculator_cosine_testing.md) — mathematical properties, precision handling, unary vs binary ops

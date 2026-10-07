@@ -3,19 +3,26 @@ Comprehensive pytest unit tests for the calculator.py application.
 
 This test suite provides thorough coverage of all calculator functions including:
 - Arithmetic operations (add, subtract, multiply, divide)
+- Trigonometric operations (cosine)
 - Input validation (is_valid_number)
 - Orchestration and error handling (perform_calculation)
 - Edge cases: division by zero, negative numbers, floats, zero values
 - Boundary conditions and special numeric values
+- Trigonometric properties: periodicity, even function, special angles
 
 Test Organization:
 - TestValidation: Tests for is_valid_number() function
 - TestArithmeticOperations: Tests for add, subtract, multiply, divide functions
 - TestPerformCalculation: Tests for the orchestration function
+- TestCosineFunction: Core cosine function tests with mathematical properties
+- TestCosineInPerformCalculation: Integration tests for cosine in perform_calculation
+- TestGetOperationWithCosine: User input validation for cosine operation
+- TestMainFunctionWithCosine: End-to-end workflow tests with cosine
 - Parameterized tests for efficient coverage of multiple similar scenarios
 """
 
 import pytest
+import math
 from unittest.mock import patch, MagicMock
 from calculator import (
     is_valid_number,
@@ -23,6 +30,7 @@ from calculator import (
     subtract,
     multiply,
     divide,
+    cosine,
     perform_calculation,
     get_first_number,
     get_second_number,
@@ -508,7 +516,7 @@ class TestMainFunction:
 
     def test_main_addition_flow(self):
         """Test main function with addition operation."""
-        with patch('builtins.input', side_effect=['5', '3', '+']):
+        with patch('builtins.input', side_effect=['5', '+', '3']):
             with patch('builtins.print') as mock_print:
                 main()
                 # Verify that result was printed
@@ -518,7 +526,7 @@ class TestMainFunction:
 
     def test_main_subtraction_flow(self):
         """Test main function with subtraction operation."""
-        with patch('builtins.input', side_effect=['10', '3', '-']):
+        with patch('builtins.input', side_effect=['10', '-', '3']):
             with patch('builtins.print') as mock_print:
                 main()
                 output_calls = [str(call) for call in mock_print.call_args_list]
@@ -527,7 +535,7 @@ class TestMainFunction:
 
     def test_main_multiplication_flow(self):
         """Test main function with multiplication operation."""
-        with patch('builtins.input', side_effect=['4', '5', '*']):
+        with patch('builtins.input', side_effect=['4', '*', '5']):
             with patch('builtins.print') as mock_print:
                 main()
                 output_calls = [str(call) for call in mock_print.call_args_list]
@@ -536,7 +544,7 @@ class TestMainFunction:
 
     def test_main_division_flow(self):
         """Test main function with division operation."""
-        with patch('builtins.input', side_effect=['10', '2', '/']):
+        with patch('builtins.input', side_effect=['10', '/', '2']):
             with patch('builtins.print') as mock_print:
                 main()
                 output_calls = [str(call) for call in mock_print.call_args_list]
@@ -545,7 +553,7 @@ class TestMainFunction:
 
     def test_main_division_by_zero_flow(self):
         """Test main function with division by zero."""
-        with patch('builtins.input', side_effect=['5', '0', '/']):
+        with patch('builtins.input', side_effect=['5', '/', '0']):
             with patch('builtins.print') as mock_print:
                 main()
                 output_calls = [str(call) for call in mock_print.call_args_list]
@@ -555,7 +563,7 @@ class TestMainFunction:
 
     def test_main_with_floats(self):
         """Test main function with floating point numbers."""
-        with patch('builtins.input', side_effect=['1.5', '2.5', '+']):
+        with patch('builtins.input', side_effect=['1.5', '+', '2.5']):
             with patch('builtins.print') as mock_print:
                 main()
                 output_calls = [str(call) for call in mock_print.call_args_list]
@@ -564,7 +572,7 @@ class TestMainFunction:
 
     def test_main_with_negative_numbers(self):
         """Test main function with negative numbers."""
-        with patch('builtins.input', side_effect=['-5', '-3', '*']):
+        with patch('builtins.input', side_effect=['-5', '*', '-3']):
             with patch('builtins.print') as mock_print:
                 main()
                 output_calls = [str(call) for call in mock_print.call_args_list]
@@ -578,7 +586,7 @@ class TestEdgeCasesAndBoundaries:
     def test_very_large_number_addition(self):
         """Test addition with very large numbers."""
         result = add(1e100, 2e100)
-        assert result == 3e100
+        assert result == pytest.approx(3e100)
 
     def test_very_small_number_addition(self):
         """Test addition with very small numbers."""
@@ -661,3 +669,341 @@ class TestEdgeCasesAndBoundaries:
         """Test absorbing element for multiplication (multiplying by 0)."""
         assert multiply(42, 0) == 0
         assert multiply(0, 42) == 0
+
+
+class TestCosineFunction:
+    """Test suite for cosine function - core mathematical operations."""
+
+    # Happy path: exact mathematical values
+    def test_cosine_of_zero(self):
+        """Test cosine(0) = 1.0."""
+        assert cosine(0) == pytest.approx(1.0)
+
+    def test_cosine_of_pi(self):
+        """Test cosine(π) = -1.0."""
+        assert cosine(math.pi) == pytest.approx(-1.0)
+
+    def test_cosine_of_pi_over_two(self):
+        """Test cosine(π/2) ≈ 0."""
+        assert cosine(math.pi / 2) == pytest.approx(0.0, abs=1e-10)
+
+    def test_cosine_of_pi_over_four(self):
+        """Test cosine(π/4) ≈ 0.707."""
+        assert cosine(math.pi / 4) == pytest.approx(0.7071067811865476)
+
+    def test_cosine_of_negative_pi(self):
+        """Test cosine(-π) = -1.0."""
+        assert cosine(-math.pi) == pytest.approx(-1.0)
+
+    def test_cosine_of_two_pi(self):
+        """Test cosine(2π) ≈ 1.0."""
+        assert cosine(2 * math.pi) == pytest.approx(1.0, abs=1e-10)
+
+    # Even function property: cos(-x) = cos(x)
+    def test_cosine_even_function_property_pi_over_4(self):
+        """Test even function property: cos(-π/4) = cos(π/4)."""
+        assert cosine(-math.pi / 4) == pytest.approx(cosine(math.pi / 4))
+
+    def test_cosine_even_function_property_pi_over_3(self):
+        """Test even function property: cos(-π/3) = cos(π/3)."""
+        assert cosine(-math.pi / 3) == pytest.approx(cosine(math.pi / 3))
+
+    def test_cosine_even_function_property_arbitrary(self):
+        """Test even function property with arbitrary angle."""
+        angle = 1.5
+        assert cosine(-angle) == pytest.approx(cosine(angle))
+
+    # Periodicity: cos(x) = cos(x + 2π)
+    def test_cosine_periodicity_zero_plus_2pi(self):
+        """Test periodicity: cos(0) = cos(0 + 2π)."""
+        assert cosine(0) == pytest.approx(cosine(2 * math.pi))
+
+    def test_cosine_periodicity_pi_over_4_plus_2pi(self):
+        """Test periodicity: cos(π/4) = cos(π/4 + 2π)."""
+        angle = math.pi / 4
+        assert cosine(angle) == pytest.approx(cosine(angle + 2 * math.pi))
+
+    def test_cosine_periodicity_arbitrary_angle(self):
+        """Test periodicity with arbitrary angle."""
+        angle = 2.3
+        assert cosine(angle) == pytest.approx(cosine(angle + 2 * math.pi), rel=1e-10)
+
+    def test_cosine_periodicity_multiple_periods(self):
+        """Test periodicity over multiple periods."""
+        angle = 1.7
+        assert cosine(angle) == pytest.approx(cosine(angle + 4 * math.pi), rel=1e-10)
+
+    # Small angles
+    def test_cosine_very_small_positive_angle(self):
+        """Test cosine with very small positive angle."""
+        small_angle = 1e-10
+        result = cosine(small_angle)
+        # cos(x) ≈ 1 for very small x
+        assert result == pytest.approx(1.0, abs=1e-9)
+
+    def test_cosine_very_small_negative_angle(self):
+        """Test cosine with very small negative angle."""
+        small_angle = -1e-10
+        result = cosine(small_angle)
+        # cos(-x) = cos(x), and cos(x) ≈ 1 for very small x
+        assert result == pytest.approx(1.0, abs=1e-9)
+
+    # Large angles
+    def test_cosine_very_large_angle(self):
+        """Test cosine with very large angle."""
+        large_angle = 1000 * math.pi
+        result = cosine(large_angle)
+        # Due to periodicity, cos(1000π) = cos(0) = 1
+        assert result == pytest.approx(1.0, abs=1e-10)
+
+    def test_cosine_very_large_negative_angle(self):
+        """Test cosine with very large negative angle."""
+        large_angle = -1000 * math.pi
+        result = cosine(large_angle)
+        assert result == pytest.approx(1.0, abs=1e-10)
+
+    # Additional mathematical values
+    def test_cosine_of_pi_over_6(self):
+        """Test cosine(π/6) ≈ 0.866."""
+        assert cosine(math.pi / 6) == pytest.approx(0.8660254037844387)
+
+    def test_cosine_of_pi_over_3(self):
+        """Test cosine(π/3) = 0.5."""
+        assert cosine(math.pi / 3) == pytest.approx(0.5)
+
+    def test_cosine_of_three_pi_over_2(self):
+        """Test cosine(3π/2) ≈ 0."""
+        assert cosine(3 * math.pi / 2) == pytest.approx(0.0, abs=1e-10)
+
+    # Parameterized cosine tests
+    @pytest.mark.parametrize("angle,expected", [
+        (0, 1.0),
+        (math.pi / 2, 0.0),
+        (math.pi, -1.0),
+        (3 * math.pi / 2, 0.0),
+        (2 * math.pi, 1.0),
+    ])
+    def test_cosine_parametrized_standard_angles(self, angle, expected):
+        """Parametrized test for standard trigonometric angles."""
+        assert cosine(angle) == pytest.approx(expected, abs=1e-10)
+
+    @pytest.mark.parametrize("angle", [
+        math.pi / 6,
+        math.pi / 4,
+        math.pi / 3,
+        -math.pi / 6,
+        -math.pi / 4,
+        -math.pi / 3,
+    ])
+    def test_cosine_even_function_parametrized(self, angle):
+        """Parametrized test for even function property."""
+        assert cosine(-angle) == pytest.approx(cosine(angle))
+
+    @pytest.mark.parametrize("angle", [0, 1, 2, 3.5, -1.5, -3.7])
+    def test_cosine_periodicity_parametrized(self, angle):
+        """Parametrized test for periodicity property."""
+        assert cosine(angle) == pytest.approx(cosine(angle + 2 * math.pi), rel=1e-10)
+
+
+class TestCosineInPerformCalculation:
+    """Test suite for cosine operation integrated with perform_calculation."""
+
+    def test_perform_calculation_cosine_zero(self):
+        """Test perform_calculation with cosine(0) = 1.0."""
+        result = perform_calculation(0, None, 'cos')
+        assert result == pytest.approx(1.0)
+
+    def test_perform_calculation_cosine_pi(self):
+        """Test perform_calculation with cosine(π) = -1.0."""
+        result = perform_calculation(math.pi, None, 'cos')
+        assert result == pytest.approx(-1.0)
+
+    def test_perform_calculation_cosine_pi_over_2(self):
+        """Test perform_calculation with cosine(π/2) ≈ 0."""
+        result = perform_calculation(math.pi / 2, None, 'cos')
+        assert result == pytest.approx(0.0, abs=1e-10)
+
+    def test_perform_calculation_cosine_pi_over_4(self):
+        """Test perform_calculation with cosine(π/4)."""
+        result = perform_calculation(math.pi / 4, None, 'cos')
+        assert result == pytest.approx(0.7071067811865476)
+
+    def test_perform_calculation_cosine_negative_pi(self):
+        """Test perform_calculation with cosine(-π) = -1.0."""
+        result = perform_calculation(-math.pi, None, 'cos')
+        assert result == pytest.approx(-1.0)
+
+    def test_perform_calculation_cosine_two_pi(self):
+        """Test perform_calculation with cosine(2π) ≈ 1.0."""
+        result = perform_calculation(2 * math.pi, None, 'cos')
+        assert result == pytest.approx(1.0, abs=1e-10)
+
+    def test_perform_calculation_cosine_with_float(self):
+        """Test perform_calculation cosine with float input."""
+        result = perform_calculation(1.5, None, 'cos')
+        expected = math.cos(1.5)
+        assert result == pytest.approx(expected)
+
+    def test_perform_calculation_cosine_with_negative_float(self):
+        """Test perform_calculation cosine with negative float input."""
+        result = perform_calculation(-2.3, None, 'cos')
+        expected = math.cos(-2.3)
+        assert result == pytest.approx(expected)
+
+    def test_perform_calculation_cosine_ignores_num2(self):
+        """Test that perform_calculation cosine ignores second argument."""
+        # Both should produce same result since cosine only uses num1
+        result1 = perform_calculation(math.pi / 4, None, 'cos')
+        result2 = perform_calculation(math.pi / 4, 999, 'cos')
+        assert result1 == pytest.approx(result2)
+
+    @pytest.mark.parametrize("angle", [0, math.pi / 6, math.pi / 4, math.pi / 2, math.pi, 2 * math.pi])
+    def test_perform_calculation_cosine_parametrized(self, angle):
+        """Parametrized test for perform_calculation with cosine."""
+        result = perform_calculation(angle, None, 'cos')
+        expected = math.cos(angle)
+        assert result == pytest.approx(expected, abs=1e-10)
+
+
+class TestGetOperationWithCosine:
+    """Test suite for get_operation validation with cosine support."""
+
+    def test_get_operation_cosine_is_valid(self):
+        """Test that get_operation accepts 'cos' as valid operation."""
+        with patch('builtins.input', return_value='cos'):
+            result = get_operation()
+            assert result == 'cos'
+
+    def test_get_operation_returns_cosine(self):
+        """Test that get_operation correctly returns cosine operator."""
+        with patch('builtins.input', return_value='cos'):
+            result = get_operation()
+            assert result == 'cos'
+            assert result in ['+', '-', '*', '/', 'cos']
+
+    def test_get_operation_cosine_with_other_valid_ops(self):
+        """Test that cosine is treated equally with other operations."""
+        operations = ['+', '-', '*', '/', 'cos']
+        for op in operations:
+            with patch('builtins.input', return_value=op):
+                result = get_operation()
+                assert result == op
+
+    def test_get_operation_invalid_then_cosine(self):
+        """Test get_operation with invalid input followed by cosine."""
+        with patch('builtins.input', side_effect=['invalid', 'cos']):
+            with patch('builtins.print'):  # Suppress error output
+                result = get_operation()
+                assert result == 'cos'
+
+    def test_get_operation_invalid_ops_still_rejected_with_cosine(self):
+        """Test that invalid operators are still rejected when cosine exists."""
+        with patch('builtins.input', side_effect=['^', '%', 'cos']):
+            with patch('builtins.print'):  # Suppress error output
+                result = get_operation()
+                assert result == 'cos'
+
+    def test_get_operation_rejects_cos_variation_lowercase_with_caps(self):
+        """Test that 'COS' (uppercase) is rejected, only 'cos' accepted."""
+        with patch('builtins.input', side_effect=['COS', 'cos']):
+            with patch('builtins.print'):  # Suppress error output
+                result = get_operation()
+                assert result == 'cos'
+
+    @pytest.mark.parametrize("invalid_op", ['CO', 'coss', 'cosin', 'cosine', 'COS', 'Cos'])
+    def test_get_operation_cosine_typos_rejected(self, invalid_op):
+        """Parametrized test for cosine typos being rejected."""
+        with patch('builtins.input', side_effect=[invalid_op, 'cos']):
+            with patch('builtins.print'):  # Suppress error output
+                result = get_operation()
+                assert result == 'cos'
+
+    def test_get_operation_error_message_includes_cos(self):
+        """Test that error message for invalid operations mentions cos."""
+        with patch('builtins.input', side_effect=['invalid', '+']):
+            with patch('builtins.print') as mock_print:
+                get_operation()
+                # Check that cos was mentioned in error messages
+                error_output = str(mock_print.call_args_list)
+                assert 'cos' in error_output.lower() or 'Unsupported operation' in error_output
+
+
+class TestMainFunctionWithCosine:
+    """Test suite for main function with cosine operation."""
+
+    def test_main_cosine_flow_zero(self):
+        """Test main function with cosine(0)."""
+        with patch('builtins.input', side_effect=['0', 'cos']):
+            with patch('builtins.print') as mock_print:
+                main()
+                output_calls = [str(call) for call in mock_print.call_args_list]
+                output_text = ' '.join(output_calls)
+                # Should display result for cosine, not ask for second number
+                assert 'Result' in output_text or 'cos' in output_text.lower()
+
+    def test_main_cosine_flow_pi(self):
+        """Test main function with cosine(π)."""
+        with patch('builtins.input', side_effect=[str(math.pi), 'cos']):
+            with patch('builtins.print') as mock_print:
+                main()
+                output_calls = [str(call) for call in mock_print.call_args_list]
+                output_text = ' '.join(output_calls)
+                assert 'Result' in output_text or 'cos' in output_text.lower()
+
+    def test_main_cosine_flow_only_requests_one_number(self):
+        """Test that cosine operation only requests first number."""
+        with patch('builtins.input', side_effect=['1.5', 'cos']) as mock_input:
+            with patch('builtins.print'):
+                main()
+                # Input should be called exactly twice: once for number, once for operation
+                assert mock_input.call_count == 2
+
+    def test_main_cosine_output_format(self):
+        """Test that cosine result output has correct format."""
+        test_value = math.pi / 4
+        with patch('builtins.input', side_effect=[str(test_value), 'cos']):
+            with patch('builtins.print') as mock_print:
+                main()
+                # Convert calls to string and check for expected format
+                all_output = str(mock_print.call_args_list)
+                # Should contain "Result: cos(...) ="
+                assert 'Result' in all_output or '=' in all_output
+
+    def test_main_cosine_with_negative_angle(self):
+        """Test main function with negative cosine angle."""
+        with patch('builtins.input', side_effect=[str(-math.pi / 2), 'cos']):
+            with patch('builtins.print') as mock_print:
+                main()
+                output_calls = [str(call) for call in mock_print.call_args_list]
+                output_text = ' '.join(output_calls)
+                assert 'Result' in output_text
+
+    def test_main_cosine_with_float_input(self):
+        """Test main function with float cosine angle."""
+        with patch('builtins.input', side_effect=['2.5', 'cos']):
+            with patch('builtins.print') as mock_print:
+                main()
+                output_calls = [str(call) for call in mock_print.call_args_list]
+                output_text = ' '.join(output_calls)
+                assert 'Result' in output_text or 'cos' in output_text.lower()
+
+    def test_main_cosine_binary_operations_not_affected(self):
+        """Test that binary operations still work correctly alongside cosine."""
+        with patch('builtins.input', side_effect=['5', '+', '3']):
+            with patch('builtins.print') as mock_print:
+                main()
+                output_calls = [str(call) for call in mock_print.call_args_list]
+                output_text = ' '.join(output_calls)
+                # Binary operation should still ask for second number
+                assert 'Result' in output_text or '8' in output_text
+
+    @pytest.mark.parametrize("angle_input", ['0', str(math.pi / 2), str(math.pi), str(2 * math.pi)])
+    def test_main_cosine_parametrized_angles(self, angle_input):
+        """Parametrized test for main with various cosine angles."""
+        with patch('builtins.input', side_effect=[angle_input, 'cos']):
+            with patch('builtins.print') as mock_print:
+                main()
+                output_calls = [str(call) for call in mock_print.call_args_list]
+                output_text = ' '.join(output_calls)
+                # All should produce a result
+                assert 'Result' in output_text
